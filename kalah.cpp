@@ -142,6 +142,9 @@ void play(int* board, int x, bool turn){
 		board[hand]++;
 		ct--;
 	}
+	
+	//TODO extra moves not yet implemented
+
 
 	// Capture
 	if(!isKalahah(hand) && board[hand]==1 && board[(hand+h/2)%h]!=0){
@@ -164,6 +167,9 @@ int alphabeta(int* board, int depth, double alpha, double beta, bool turn){
 			if(alpha>=beta) break;
 		}
 	}
+
+	//TODO alphabeta doesn't work
+
 	else{
 		value = 10000;
 		for(int i = m+1; i < 2*m+1; i++){
@@ -175,6 +181,7 @@ int alphabeta(int* board, int depth, double alpha, double beta, bool turn){
 	return value;
 }//call: alphabeta(origin, depth, -inf, +inf, ?true?)
 
+//Robot picks a move
 int robotMove(int* board, char turn, int depth){
 	sleep(1);
 	int max = -100000;
