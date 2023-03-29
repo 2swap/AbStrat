@@ -13,20 +13,20 @@ steadystates = [
         list("- 12 21")
         ],
         [
-        list("*      "),
-        list("-*     "),
-        list("*-1** *"),
-        list("-12--* "),
-        list(" 21**- "),
-        list("212--++")
-        ],
-        [
-        list("*** ***"),
+        list("*** ***"), # The original! This works!
         list("---2---"),
         list("***1***"),
         list("---2---"),
         list("**11*+ "),
         list("--21-2+")
+        ],
+        [
+        list("**     "), # Woah...
+        list("--     "),
+        list("* 1****"),
+        list("-12--++"),
+        list(" 21**  "),
+        list("212--++")
         ],
         [
         list("** ****"),
@@ -35,17 +35,34 @@ steadystates = [
         list("-22----"),
         list("+21**  "),
         list("112--++")
-        ]
-]
-
-def generate_board():
-    steadystate = [
+        ],
+        [
         list("** ****"),
         list("--1----"),
         list("**1+***"),
         list("--2+---"),
         list("**12***"),
         list("--21--2")
+        ],
+        [
+        list("**-*-*-"),
+        list("-+*-*-*"),
+        list("* +1-2-"),
+        list("-+ 1*1 "),
+        list("* +2-22"),
+        list("-+12 21")
+        ]
+
+]
+
+def generate_board():
+    steadystate =[
+        list("*--1***"),
+        list("-**2---"),
+        list("*--1***"),
+        list("+**2---"),
+        list("*-+12**"),
+        list("- 221--")
         ]
     board = [1]*boardheight
     for i in range(boardheight):
@@ -60,12 +77,12 @@ def generate_board():
     return (steadystate, board)
 
 def print_board(board):
-    print "\n"
+    print("\n")
     for row in board:
-        print " ".join(row)
-    print "\n"
-    print " ".join(["1","2","3","4","5","6","7"])
-    print "\n"
+        print(" ".join(row))
+    print("\n")
+    print(" ".join(["1","2","3","4","5","6","7"]))
+    print("\n")
  
 def mark_board(steadystate, board, last, column, player):
     p = str(player)
@@ -153,20 +170,19 @@ loses = 0
 while True:
     (steadystate, board) = generate_board()
     while True:
-        print_board(board)
         play(steadystate, board)
-        print()
         print_board(board)
-        steadystateresponse(steadystate)
         if check_winner(board, "1"):
             loses+=1
-            print "You win!"
-            print str(wins) + " " + str(loses)
+            print("You win!")
+            print(str(wins) + " " + str(loses))
             exit()
+        steadystateresponse(steadystate)
+        print_board(board)
         if check_winner(board, "2"):
             wins+=1
-            print "You lose!"
+            print("You lose!")
+            print(str(wins) + " " + str(loses))
             break
-    print str(wins) + " " + str(loses)
 
 
