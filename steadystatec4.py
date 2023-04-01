@@ -3,54 +3,65 @@ import time, random
 
 boardheight = 6
 boardwidth = 7
-priority_list = ["*", "+", " ", "-"]
+priority_list = ["+", " ", "-"]
+miai = ['@','#']
 steadystates = [[
-        list("*** ***"), # The original! This works!
-        list("-*-2---"),
-        list("***1***"),
-        list("---2---"),
-        list("**11*+ "),
-        list("--21-2+")
-    #list("**-1--+"),
-    #list("--22** "),
-    #list("**112++"),
-    #list("--221  "),
-    #list("**112++"),
-    #list("--221  ")
-]]*100
+        list("       "),
+        list(" 21    "),
+        list(" 12    "),
+        list(" 21    "),
+        list(" 122   "),
+        list(" 121   ")
+]]*1000
 ssindex = 0
 known_steadystates = [
         [
-        list("*      "),
-        list("-**  **"),
-        list("*--2 --"),
+        list("*  2   "),
+        list("-**1 1*"),
+        list("*--2 2-"),
         list("-**1*1*"),
-        list("*--2-2-"),
+        list("*- 2-2-"),
         list("- 12 21")
         ],
         [
-        list("*** ***"), # The original! This works!
+        list("+++ +++"), # The original!
         list("---2---"),
-        list("***1***"),
+        list("+++1+++"),
         list("---2---"),
-        list("**11*+ "),
+        list("++11++ "),
         list("--21-2+")
         ],
         [
-        list("**     "), # woah...
-        list("--     "),
-        list("* 1****"),
-        list("-12--++"),
-        list(" 21**  "),
-        list("212--++")
+        list("+++ +++"),
+        list("---+---"),
+        list("+++-+++"),
+        list("---2---"),
+        list("++11++ "),
+        list("--21-2+")
         ],
         [
-        list("** ****"),
-        list("--2-*--"),
-        list("*11*-**"),
-        list("-22----"),
-        list("+21**  "),
-        list("112--++")
+        list("*******"), # woah...
+        list("-------"),
+        list("*#1****"),
+        list("-12--++"),
+        list("#21**  "),
+        list("212--@@")
+        ],
+        [
+        list("       "),
+        list(" 21    "),
+        list(" 12    "),
+        list(" 21    "),
+        list(" 122   "),
+        list(" 121   ")
+        ],
+        [
+        list("++111++"), # First found computationally!
+        list("-+222+-"),
+        list("++112-+"),
+        list("--221+-"),
+        list("++112-+"),
+        list("--221+2")
         ],
         [
         list("** ****"),
@@ -61,14 +72,19 @@ known_steadystates = [
         list("--21--2")
         ],
         [
-        list("**-*-*-"),
-        list("-+*-*-*"),
-        list("* +1-2-"),
-        list("-+ 1*1 "),
-        list("* +2-22"),
-        list("-+12 21")
-        ]
-
+        list("*      "),
+        list("-**   *"),
+        list("*--   -"),
+        list("-** 1 *"),
+        list("*-2 21-"),
+        list("- 12122")
+        ],
+        [['+', ' ', '1', '+', '-', ' ', '*'],
+         ['-', '-', '2', ' ', '+', '*', ' '],
+         ['+', '1', '1', ' ', '*', '+', '*'],
+         ['*', '2', '2', '2', '*', '+', '*'],
+         ['-', '2', '1', '1', '-', '*', ' '],
+         ['1', '1', '2', '2', ' ', '-', '+']]
 ]
 
 def generate_board():
@@ -95,36 +111,35 @@ def print_board(board):
     print(" ".join(["1","2","3","4","5","6","7"]))
     print("\n")
  
-def mark_board(steadystate, board, last, column, player):
+def mark_board(steadystate, board, y, x, player):
     p = str(player)
-    board[last][column] = p
-    steadystate[last][column] = p
+    board[y][x] = p
+    steadystate[y][x] = p
 
 def play(steadystate, board):
     #column = int(input("Pick a column (1-7): ")) - 1
-    column = random.randint(0,6)
-    while board[0][column] != ".":
-        column = random.randint(0,6)
-    for i in range(boardheight):
-        if board[i][column] == ".":
-            last = i
-    mark_board(steadystate, board, last, column, 1)
+    x = random.randint(0,6)
+    while board[0][x] != ".":
+        x = random.randint(0,6)
+    for y in range(boardheight-1,-1,-1):
+        if board[y][x] == ".":
+            mark_board(steadystate, board, y, x, 1)
+            return
 
 def steadystateresponse(steadystate):
-    """
     alph = {}
-    column = -1
     for x in range(boardwidth):
         for y in range(boardheight):
             letter = steadystate[y][x]
-            alph[letter] = alph.get(letter, 0) + 1
+            if letter in miai:
+                alph[letter] = alph.get(letter, 0) + 1
     for key in alph:
         if alph[key] == 1:
             for x in range(boardwidth):
                 for y in range(boardheight):
                     if steadystate[y][x] == key:
-                        column = x
-    """
+                        mark_board(steadystate, board, y, x, 2)
+                        return
 
     priorities = ["x"]*boardwidth
     for x in range(boardwidth):
@@ -133,18 +148,16 @@ def steadystateresponse(steadystate):
             if ss != "1" and ss != "2":
                 priorities[x] = ss
 
-    #print(priorities)
-
-    column = -1
-    for x in priority_list:
-        if x in priorities:
-            column = priorities.index(x)
+    x = -1
+    for i in priority_list:
+        if i in priorities:
+            x = priorities.index(i)
             break
 
     for i in range(boardheight):
-        if board[i][column] == ".":
-            last = i
-    mark_board(steadystate, board, last, column, 2)
+        if board[i][x] == ".":
+            y = i
+    mark_board(steadystate, board, y, x, 2)
 
 def tie(board):
     for y in range(boardheight):
@@ -181,6 +194,8 @@ def check_winner(board, player):
     return False
 
 def onwin(ssindex):
+    if(random.random() < 0.94):
+        return
     whichoverwrite = random.randint(0,len(steadystates)-1)
     while(whichoverwrite == ssindex):
         whichoverwrite = random.randint(0,len(steadystates)-1)
@@ -190,40 +205,36 @@ def mutate(ss):
     (ret,_) = generate_board()
     for y in range(boardheight):
         for x in range(boardwidth):
-            if ret[y][x] not in ['1','2'] and random.random()<0.05:
+            if ret[y][x] in priority_list and random.random()<0.05:
                 ret[y][x] = random.choice(priority_list)
     return ret
 
-winner = False
-wins = 0
 while True:
-    (steadystate, board) = generate_board()
+    ssindex = random.randint(0,len(steadystates)-1)
+    wins = 0
     while True:
-        play(steadystate, board)
-        #print_board(board)
-        if check_winner(board, "1"):
-            print(f"SteadyState loses! {wins}")
-            wins = 0
-            ssindex = (ssindex + 1) % len(steadystates)
-            break
-        if tie(board):
-            print(f"Tie! {wins}")
-            wins = 0
-            ssindex = (ssindex + 1) % len(steadystates)
-            break
-        steadystateresponse(steadystate)
-        #print_board(board)
-        if check_winner(board, "2"):
-            print(f"SteadyState wins! {wins}")
-            wins+=1
-            onwin(ssindex)
-            if(wins % 10000 == 0):
-                pprint(steadystates[ssindex])
-                exit()
-            break
-        if tie(board):
-            print(f"Tie! {wins}")
-            wins = 0
-            ssindex = (ssindex + 1) % len(steadystates)
+        (steadystate, board) = generate_board()
+        won = False
+        while True:
+            play(steadystate, board)
+            if check_winner(board, "1") or tie(board):
+                break
+            steadystateresponse(steadystate)
+            if check_winner(board, "2"):
+                wins+=1
+                won = True
+                if wins % 1000 == 0:
+                    print(f"SteadyState wins! {wins}")
+                if wins % 10000 == 0:
+                    pprint(steadystates[ssindex])
+                    pprint(steadystate)
+                if wins == 100000:
+                    exit()
+                onwin(ssindex)
+                break
+            if tie(board):
+                break
+        if not won:
+            print(f"wins: {wins}")
             break
 
