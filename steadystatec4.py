@@ -1,20 +1,15 @@
 from pprint import pprint
 import time, random
 
-boardheight = 6
-boardwidth = 7
-priority_list = ["+", " ", "-"]
-miai = ['@','#', '$']
-steadystates = [[
-        list("+-+@-#-"),
-        list("-+-2+1+"),
-        list("+-21-2-"),
-        list("-+12+1+"),
-        list("$-21-2-"),
-        list("2@12$1#")
-]]*1000
-ssindex = 0
 known_steadystates = [
+        [
+        list("       "),
+        list("       "),
+        list("       "),
+        list("       "),
+        list("       "),
+        list("       ")
+        ],
         [
         list("+++c+++"), # The original!
         list("---2---"),
@@ -62,8 +57,25 @@ known_steadystates = [
         list("-*12+1*"),
         list("+-21-2-"),
         list("2112+1+")
-        ]
+        ],
+        [
+        list("++ -++2"),
+        list("--1+--1"),
+        list("++1-++2"),
+        list("--21--1"),
+        list("++12++2"),
+        list("@@21--2")
+        ],
 ]
+
+boardheight = 6
+boardwidth = 7
+priority_list = ["*", "+", " ", "-"]
+miai = ['@','#','$']
+steadystates = [
+    known_steadystates[7]
+]*1000
+ssindex = 0
 
 def generate_board():
     board = [1]*boardheight
@@ -81,14 +93,6 @@ def generate_board():
                 board[y][x] = "."
     return (ss, board)
 
-def print_board(board):
-    print("\n")
-    for row in board:
-        print(" ".join(row))
-    print("\n")
-    print(" ".join(["1","2","3","4","5","6","7"]))
-    print("\n")
- 
 def mark_board(steadystate, board, y, x, player):
     p = str(player)
     board[y][x] = p
@@ -101,12 +105,12 @@ def play(steadystate, board):
     if indices: # if there is a legal move
         x = random.choice(indices) # choose a random index from the list of indices
     else:
-        return False # There are no legal moves.
+        return (False, ()) # There are no legal moves.
     for y in range(boardheight-1,-1,-1):
         if board[y][x] == ".":
             mark_board(steadystate, board, y, x, 1)
-            return True
-    return False
+            return (True, (y,x))
+    return (False, ())
 
 def steadystateresponse(steadystate):
     alph = {}
@@ -117,16 +121,16 @@ def steadystateresponse(steadystate):
                 alph[letter] = alph.get(letter, 0) + 1
     for key in alph:
         if alph[key] > 2:
-            return False
+            return (False, ())
         if alph[key] == 1:
             for x in range(boardwidth):
                 for y in range(boardheight):
                     if steadystate[y][x] == key:
                         if y!=boardheight-1 and board[y+1][x]=='.':
-                            return False
+                            return (False, ())
                         mark_board(steadystate, board, y, x, 2)
-                        return True
-            return False
+                        return (True, (y,x))
+            return (False, ())
 
     priorities = ["x"]*boardwidth
     for x in range(boardwidth):
@@ -146,34 +150,37 @@ def steadystateresponse(steadystate):
         if board[i][x] == ".":
             y = i
     if y == -1 or x == -1:
-        return False
+        return (False, ())
     mark_board(steadystate, board, y, x, 2)
-    return True
+    return (True, (y,x))
 
-def check_winner(board, player):
+def check_winner(board, player, last_move):
+    y, x = last_move
     #check horizontal spaces
-    for y in range(boardheight):
-        for x in range(boardwidth - 3):
-            if board[y][x] == player and board[y][x+1] == player and board[y][x+2] == player and board[y][x+3] == player:
-                return True
+    for i in range(max(0, x-3), min(x+1, boardwidth-3)):
+        if board[y][i] == player and board[y][i+1] == player and board[y][i+2] == player and board[y][i+3] == player:
+            return True
 
     #check vertical spaces
-    for x in range(boardwidth):
-        for y in range(boardheight - 3):
-            if board[y][x] == player and board[y+1][x] == player and board[y+2][x] == player and board[y+3][x] == player:
-                return True
+    if y+3 < boardheight:
+        if board[y+1][x] == player and board[y+2][x] == player and board[y+3][x] == player:
+            return True
 
     #check / diagonal spaces
-    for x in range(boardwidth - 3):
-        for y in range(3, boardheight):
-            if board[y][x] == player and board[y-1][x+1] == player and board[y-2][x+2] == player and board[y-3][x+3] == player:
-                return True
+    for i in range(max(0, x-3), min(x+1, boardwidth-3)):
+        j = y - i + x
+        if j < 3 or j >= boardheight:
+            continue
+        if board[j][i] == player and board[j-1][i+1] == player and board[j-2][i+2] == player and board[j-3][i+3] == player:
+            return True
 
-    #check \ diagonal spaces
-    for x in range(boardwidth - 3):
-        for y in range(boardheight - 3):
-            if board[y][x] == player and board[y+1][x+1] == player and board[y+2][x+2] == player and board[y+3][x+3] == player:
-                return True
+    # check \ diagonal spaces
+    for i in range(max(0, x-3), min(x+1, boardwidth-3)):
+        j = y - x + i
+        if j < 0 or j > boardheight-4:
+            continue
+        if board[j][i] == player and board[j+1][i+1] == player and board[j+2][i+2] == player and board[j+3][i+3] == player:
+            return True
 
     return False
 
@@ -197,6 +204,103 @@ def mutate(ss):
                 ret[y][x] = random.choice(priority_list + miai)
     return ret
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import unittest
+class TestCheckWinner(unittest.TestCase):
+    def test_horizontal_win(self):
+        board = [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0]
+        ]
+        for x in range(boardwidth):
+            for y in range(boardheight):
+                self.assertTrue(check_winner(board, 1, (y,x)) == ((3 == y) and (x>=3)))
+
+    def test_vertical_win(self):
+        board = [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 'x', 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0]
+        ]
+        for x in range(boardwidth):
+            for y in range(boardheight):
+                self.assertTrue(check_winner(board, 1, (y,x)) == ((y,x)==(2,3)))
+
+    def test_diagonal_win(self):
+        board = [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0]
+        ]
+        for x in range(boardwidth):
+            for y in range(boardheight):
+                self.assertTrue(check_winner(board, 1, (y,x)) == ((x==y) and y>=2))
+
+    def test_antidiagonal_win(self):
+        board = [
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0]
+        ]
+        for x in range(boardwidth):
+            for y in range(boardheight):
+                self.assertTrue(check_winner(board, 1, (y,x)) == (y>=2 and y+x==6))
+
+import sys
+
+# Load and run the tests
+suite = unittest.TestLoader().loadTestsFromTestCase(TestCheckWinner)
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+
+# Exit with an error code if any tests failed or had an error
+if len(result.failures) > 0 or len(result.errors) > 0:
+    sys.exit(1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 while True:
     ssindex = random.randint(0,len(steadystates)-1)
     wins = 0
@@ -204,13 +308,15 @@ while True:
         (steadystate, board) = generate_board()
         won = False
         while True:
-            if not play(steadystate, board):
+            (legal, coords) = play(steadystate, board)
+            if not legal:
                 break
-            if check_winner(board, "1"):
+            if check_winner(board, "1", coords):
                 break
-            if not steadystateresponse(steadystate):
+            (legal, coords) = steadystateresponse(steadystate)
+            if not legal:
                 break
-            if check_winner(board, "2"):
+            if check_winner(board, "2", coords):
                 wins+=1
                 won = True
                 if wins % 1000 == 0:
@@ -224,4 +330,3 @@ while True:
         if not won:
             print(f"wins: {wins}")
             break
-
