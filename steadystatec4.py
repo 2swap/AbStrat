@@ -1,54 +1,82 @@
 from pprint import pprint
+import copy
 import time, random
 
 known_steadystates = [
         [
-        list("       "),
-        list("       "),
-        list("       "),
-        list("       "),
-        list("       "),
-        list("       ")
+        list("   -   "),
+        list("   2   "),
+        list("   1   "),
+        list("   2   "),
+        list("  11 =-"),
+        list("  21 2+")
         ],
         [
-        list("+++c+++"), # The original!
-        list("---2---"),
-        list("+++1+++"),
-        list("---2---"),
-        list("++11+ad"),
-        list("--21-2b")
+        list("  #    "),
+        list("  1    "),
+        list("  1  ++"),
+        list("  2  =="),
+        list("#21  --"),
+        list("212  @@")
         ],
         [
-        list("*******"), # woah...
-        list("-------"),
-        list("*#1****"),
-        list("-12--++"),
-        list("#21**  "),
-        list("212--@@")
+        list("       "),
+        list("       "),
+        list(" #1  ++"),
+        list(" 12  =="),
+        list("#21  --"),
+        list("212  @@")
         ],
         [
-        list("++111++"), # First found computationally!
-        list("-+222+-"),
-        list("++112-+"),
-        list("--221+-"),
-        list("++112-+"),
-        list("--221+2")
+        list("  111+ "),
+        list("  222+ "),
+        list("  112+ "),
+        list("  221+ "),
+        list("  112+ "),
+        list("  221+2")
         ],
         [
-        list("** ****"),
-        list("--1----"),
-        list("**1+***"),
-        list("--2+---"),
-        list("**12***"),
-        list("--21--2")
+        list("  ##   "),
+        list("  12   "),
+        list("  11   "),
+        list("  21   "),
+        list("  12  2"),
+        list("  21  2")
         ],
         [
-        list("+ 1+- *"),
-        list("--2 +* "),
-        list("+11 *+*"),
-        list("*222*+*"),
-        list("-211-* "),
-        list("1122 -+")
+        list(" @+    "),
+        list(" 11    "),
+        list(" 21    "),
+        list(" 22    "),
+        list("@21    "),
+        list("112 2  ")
+        ],
+        [
+        list(" -     "),
+        list(" 1     "),
+        list(" 21    "),
+        list(" 22    "),
+        list("121    "),
+        list("112 2  ")
+        ],
+        [
+        list("   -   "),
+        list("   =   "),
+        list("   +   "),
+        list("   2   "),
+        list("  11 =="),
+        list("  21 2=")
+        ],
+]
+
+unproven=[
+        [
+        list("       "),
+        list("   2 1 "),
+        list("  21 2 "),
+        list("  12 1 "),
+        list("  21 2 "),
+        list("2 12 1 ")
         ],
         [
         list("   2++ "), # good but not perfect
@@ -58,26 +86,14 @@ known_steadystates = [
         list("+-21-2-"),
         list("2112+1+")
         ],
-        [
-        list("++ -++2"),
-        list("--1+--1"),
-        list("++1-++2"),
-        list("--21--1"),
-        list("++12++2"),
-        list("@@21--2")
-        ],
 ]
 
 boardheight = 6
 boardwidth = 7
-priority_list = ["*", "+", " ", "-"]
-miai = ['@','#','$']
-steadystates = [
-    known_steadystates[7]
-]*1000
-ssindex = 0
+priority_list = ["+", "=", "-"]
+miai = ['@','#']
 
-def generate_board():
+def generate_board(steadystate):
     board = [1]*boardheight
     ss = [1]*boardheight
     for i in range(boardheight):
@@ -85,8 +101,8 @@ def generate_board():
         ss[i] = ["."]*boardwidth
     for x in range(boardwidth):
         for y in range(boardheight):
-            board[y][x] = steadystates[ssindex][y][x]
-            ss[y][x] = steadystates[ssindex][y][x]
+            board[y][x] = steadystate[y][x]
+            ss[y][x] = steadystate[y][x]
     for x in range(boardwidth):
         for y in range(boardheight):
             if board[y][x] not in ["1", "2"]:
@@ -112,7 +128,7 @@ def play(steadystate, board):
             return (True, (y,x))
     return (False, ())
 
-def steadystateresponse(steadystate):
+def steadystateresponse(steadystate, board):
     alph = {}
     for x in range(boardwidth):
         for y in range(boardheight):
@@ -134,10 +150,16 @@ def steadystateresponse(steadystate):
 
     priorities = ["x"]*boardwidth
     for x in range(boardwidth):
-        for y in range(boardheight):
+        for y in range(boardheight-1, -1, -1):
             ss = steadystate[y][x]
             if ss != "1" and ss != "2":
                 priorities[x] = ss
+                # Claimeven
+                if ss == ' ' and y%2==0:
+                    mark_board(steadystate, board, y, x, 2)
+                    return (True, (y,x))
+                break
+
 
     x = -1
     for i in priority_list:
@@ -184,27 +206,34 @@ def check_winner(board, player, last_move):
 
     return False
 
-def onwin(ssindex):
-    whichoverwrite = random.randint(0,len(steadystates)-1)
+def reproduce(steadystateslist, ssindex):
+    whichoverwrite = random.randint(0,len(steadystateslist)-1)
     while whichoverwrite == ssindex:
-        whichoverwrite = random.randint(0,len(steadystates)-1)
+        whichoverwrite = random.randint(0,len(steadystateslist)-1)
     r = random.random()
-    if r < 0.2:
-        y = random.randint(0, boardheight-1)
-        x = random.randint(0, boardwidth-1)
-        steadystates[whichoverwrite][y][x] = steadystates[ssindex][y][x]
-    elif r<0.25:
-        steadystates[whichoverwrite] = mutate(steadystates[ssindex])
+    if r<0.4:
+        if r < 0.2:
+            steadystateslist[whichoverwrite] = copy.deepcopy(steadystateslist[ssindex])
+        else:
+            y = random.randint(0, boardheight-1)
+            x = random.randint(0, boardwidth-1)
+            if steadystateslist[whichoverwrite][y][x] not in ['1','2']:
+                steadystateslist[whichoverwrite][y][x] = random.choice(priority_list + miai + [' '])
 
-def mutate(ss):
-    (ret,_) = generate_board()
-    for y in range(boardheight):
-        for x in range(boardwidth):
-            if ret[y][x] in priority_list and random.random()<0.05:
-                ret[y][x] = random.choice(priority_list + miai)
-    return ret
-
-
+def play_one_game(steadystate_original):
+    (steadystate, board) = generate_board(steadystate_original)
+    while True:
+        #pprint(steadystate)
+        (legal, coords) = play(steadystate, board)
+        if not legal:
+            return -1
+        if check_winner(board, "1", coords):
+            return -1
+        (legal, coords) = steadystateresponse(steadystate, board)
+        if not legal:
+            return -1
+        if check_winner(board, "2", coords):
+            return 1
 
 
 
@@ -274,6 +303,12 @@ class TestCheckWinner(unittest.TestCase):
             for y in range(boardheight):
                 self.assertTrue(check_winner(board, 1, (y,x)) == (y>=2 and y+x==6))
 
+    def test_known_steady_states(self):
+        for steadystate in known_steadystates:
+            pprint(steadystate)
+            for i in range(100):
+                assert(play_one_game(steadystate) == 1)
+
 import sys
 
 # Load and run the tests
@@ -300,33 +335,19 @@ if len(result.failures) > 0 or len(result.errors) > 0:
 
 
 
-
+generation = [copy.deepcopy(unproven[0]) for _ in range(100)]
 while True:
-    ssindex = random.randint(0,len(steadystates)-1)
+    active = random.randint(0,len(generation)-1)
     wins = 0
     while True:
-        (steadystate, board) = generate_board()
-        won = False
-        while True:
-            (legal, coords) = play(steadystate, board)
-            if not legal:
-                break
-            if check_winner(board, "1", coords):
-                break
-            (legal, coords) = steadystateresponse(steadystate)
-            if not legal:
-                break
-            if check_winner(board, "2", coords):
-                wins+=1
-                won = True
-                if wins % 1000 == 0:
-                    print(f"SteadyState wins! {wins}")
-                if wins % 10000 == 0:
-                    pprint(steadystates[ssindex])
-                if wins == 100000:
-                    exit()
-                onwin(ssindex)
-                break
-        if not won:
-            print(f"wins: {wins}")
+        if play_one_game(generation[active]) >= 0:
+            wins+=1
+            if wins % 1000 == 0:
+                print(f"SteadyState wins! {wins}")
+                pprint(generation[active])
+            if wins == 100000:
+                exit()
+            reproduce(generation, active)
+        else:
+            print(wins)
             break
