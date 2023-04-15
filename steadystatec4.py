@@ -103,6 +103,22 @@ known_steadystates = [
 
 unproven=[
         [
+        list("       "),
+        list("       "),
+        list("++ @ @ "),
+        list("== 1+1 "),
+        list("-- 2 2 "),
+        list("$$21 12"),
+        ],
+        [
+        list("       "),
+        list("       "),
+        list("   @ @ "),
+        list("   1+1 "),
+        list("  #2+2#"),
+        list("  21+12"),
+        ],
+        [
         list("   -   "),
         list("   =   "),
         list("  -1   "),
