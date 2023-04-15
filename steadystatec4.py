@@ -67,31 +67,63 @@ known_steadystates = [
         list("  11 =="),
         list("  21 2=")
         ],
+        [
+        list("- -=  -"),
+        list("- -2  #"),
+        list("-121  #"),
+        list("-112+-@"),
+        list("12221-@"),
+        list("22121--")
+        ],
+        [
+        list("   #   "),
+        list("   2  ="),
+        list(" 211  -"),
+        list(" 112+-+"),
+        list("12221--"),
+        list("22121=#")
+        ],
+        [
+        list("   -   "),
+        list("   +   "),
+        list("   =   "),
+        list("   2   "),
+        list("-=211  "),
+        list("=2112  "),
+        ],
+        [
+        list("   -   "),
+        list("   +   "),
+        list("   -   "),
+        list("   2   "),
+        list("-=21# #"),
+        list("=2112 1"),
+        ],
 ]
 
 unproven=[
         [
-        list("       "),
-        list("   2 1 "),
-        list("  21 2 "),
-        list("  12 1 "),
-        list("  21 2 "),
-        list("2 12 1 ")
+        list("   -   "),
+        list("   =   "),
+        list("  -1   "),
+        list("  +2   "),
+        list("-#21#  "),
+        list("=2112  "),
         ],
         [
-        list("   2++ "), # good but not perfect
-        list("  -2*1 "),
-        list("+ 21-2 "),
-        list("-*12+1*"),
-        list("+-21-2-"),
-        list("2112+1+")
+        list("   2== "),
+        list("  -2+1 "),
+        list("==21-2="),
+        list("-+12=1+"),
+        list("=-21-2-"),
+        list("2112=1=")
         ],
 ]
 
 boardheight = 6
 boardwidth = 7
 priority_list = ["+", "=", "-"]
-miai = ['@','#']
+miai = ['@','#','$']
 
 def generate_board(steadystate):
     board = [1]*boardheight
@@ -129,6 +161,7 @@ def play(steadystate, board):
     return (False, ())
 
 def steadystateresponse(steadystate, board):
+    # First Priority: Obey Miai
     alph = {}
     for x in range(boardwidth):
         for y in range(boardheight):
@@ -142,12 +175,14 @@ def steadystateresponse(steadystate, board):
             for x in range(boardwidth):
                 for y in range(boardheight):
                     if steadystate[y][x] == key:
+                        # Forfeit if there is an unpaired unplayable miai
                         if y!=boardheight-1 and board[y+1][x]=='.':
                             return (False, ())
                         mark_board(steadystate, board, y, x, 2)
                         return (True, (y,x))
             return (False, ())
 
+    # Second Priority: Claimeven
     priorities = ["x"]*boardwidth
     for x in range(boardwidth):
         for y in range(boardheight-1, -1, -1):
@@ -161,6 +196,7 @@ def steadystateresponse(steadystate, board):
                 break
 
 
+    # Third Priority: Follow Priority
     x = -1
     for i in priority_list:
         if i in priorities:
