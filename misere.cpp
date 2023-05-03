@@ -11,7 +11,7 @@ char alph [4] = {' ','|','-','+'};
 string players;
 int sz = 3, len = 3;
 
-double hash(bool** board){
+double hashy(bool** board){
 	int k = sz-1;
 	double sums [8] = {0,0,0,0,0,0,0,0};
 	double cur = 1.0;
@@ -87,7 +87,7 @@ void deleteBoard(bool** board){
 }
 
 int isGood(bool** board){
-	double hashed = hash(board);
+	double hashed = hashy(board);
 	map<double,bool>::iterator it = cache.find(hashed);
 	if(it != cache.end()) return it->second;
 	if(isDead(board)){
