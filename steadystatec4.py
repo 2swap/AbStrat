@@ -1,5 +1,5 @@
 from pprint import pprint
-import copy
+import copy, math
 import time, random
 
 known_steadystates = [
@@ -99,9 +99,73 @@ known_steadystates = [
         list("-=21# #"),
         list("=2112 1"),
         ],
+        [
+        list(" #-#|@="),
+        list(" 1=2|2="),
+        list(" 2-1|2="),
+        list(" 1=2|1="),
+        list(" 2-1|2="),
+        list(" 1=2@1="),
+        ],
 ]
 
 unproven=[
+        [
+        list("  @@ | "),
+        list("  11 | "),
+        list("  12 | "),
+        list("  21 |2"),
+        list("- 12 |1"),
+        list("2 21 +2"),
+        ],
+        [
+        list("       "),
+        list("   2   "),
+        list("   1   "),
+        list("   211 "),
+        list("  12221"),
+        list("  12122")
+        ],
+        [
+        list("|| 2|2|"),
+        list("|| 2|1|"),
+        list("||21|2|"),
+        list("| 12|1|"),
+        list("| 21|2|"),
+        list("1 12 1=")
+        ],
+        [
+        list("-= 2==+"),
+        list("-=-2+1 "),
+        list("==21-2="),
+        list("-+12=1+"),
+        list("=@21=2-"),
+        list("@11221=")
+        ],
+        [
+        list("-= 2==+"),
+        list("-=-2+1 "),
+        list("==21-2="),
+        list("-+12=1+"),
+        list("=-21=2-"),
+        list("2112=1=")
+        ],
+        [
+        list(" $ 1=$="),
+        list("  221++"),
+        list(" 2112+@"),
+        list(" 1221+@"),
+        list(" 1212 ="),
+        list(" 12212 "),
+        ],
+        [
+        list("= -=-+="),
+        list("= -=   "),
+        list("-+ +=+="),
+        list("=  2$++"),
+        list("- 11$2-"),
+        list("- 12122"),
+        ],
         [
         list("       "),
         list("       "),
@@ -111,12 +175,12 @@ unproven=[
         list("$$21 12"),
         ],
         [
-        list("       "),
-        list("       "),
-        list("   @ @ "),
-        list("   1+1 "),
+        list("  |- -|"),
+        list("  |- -|"),
+        list("  |2 -|"),
+        list("  -1+1-"),
         list("  #2+2#"),
-        list("  21+12"),
+        list("  12-21"),
         ],
         [
         list("   -   "),
@@ -126,20 +190,13 @@ unproven=[
         list("-#21#  "),
         list("=2112  "),
         ],
-        [
-        list("   2== "),
-        list("  -2+1 "),
-        list("==21-2="),
-        list("-+12=1+"),
-        list("=-21-2-"),
-        list("2112=1=")
-        ],
 ]
 
 boardheight = 6
 boardwidth = 7
 priority_list = ["+", "=", "-"]
-miai = ['@','#','$']
+miai = ['@','#']
+claims = [' ', '|']
 
 def generate_board(steadystate):
     board = [1]*boardheight
@@ -198,7 +255,7 @@ def steadystateresponse(steadystate, board):
                         return (True, (y,x))
             return (False, ())
 
-    # Second Priority: Claimeven
+    # Second Priority: Claimeven and Claimodd
     priorities = ["x"]*boardwidth
     for x in range(boardwidth):
         for y in range(boardheight-1, -1, -1):
@@ -209,8 +266,11 @@ def steadystateresponse(steadystate, board):
                 if ss == ' ' and y%2==0:
                     mark_board(steadystate, board, y, x, 2)
                     return (True, (y,x))
+                # Claimodd
+                if ss == '|' and y%2==1:
+                    mark_board(steadystate, board, y, x, 2)
+                    return (True, (y,x))
                 break
-
 
     # Third Priority: Follow Priority
     x = -1
@@ -260,17 +320,14 @@ def check_winner(board, player, last_move):
 
 def reproduce(steadystateslist, ssindex):
     whichoverwrite = random.randint(0,len(steadystateslist)-1)
-    while whichoverwrite == ssindex:
-        whichoverwrite = random.randint(0,len(steadystateslist)-1)
     r = random.random()
-    if r<0.4:
-        if r < 0.2:
-            steadystateslist[whichoverwrite] = copy.deepcopy(steadystateslist[ssindex])
-        else:
-            y = random.randint(0, boardheight-1)
-            x = random.randint(0, boardwidth-1)
-            if steadystateslist[whichoverwrite][y][x] not in ['1','2']:
-                steadystateslist[whichoverwrite][y][x] = random.choice(priority_list + miai + [' '])
+    steadystateslist[whichoverwrite] = copy.deepcopy(steadystateslist[ssindex])
+    if r < 0.2:
+        whichoverwrite = random.randint(0,len(steadystateslist)-1)
+    y = random.randint(0, boardheight-1)
+    x = random.randint(0, boardwidth-1)
+    if steadystateslist[whichoverwrite][y][x] not in ['1','2']:
+        steadystateslist[whichoverwrite][y][x] = random.choice(priority_list + miai + claims + [' ', ' '])
 
 def play_one_game(steadystate_original):
     (steadystate, board) = generate_board(steadystate_original)
@@ -386,8 +443,8 @@ if len(result.failures) > 0 or len(result.errors) > 0:
 
 
 
-
-generation = [copy.deepcopy(unproven[0]) for _ in range(100)]
+currbest = 1
+generation = [copy.deepcopy(unproven[0]) for _ in range(1000)]
 while True:
     active = random.randint(0,len(generation)-1)
     wins = 0
@@ -399,7 +456,9 @@ while True:
                 pprint(generation[active])
             if wins == 100000:
                 exit()
-            reproduce(generation, active)
         else:
             print(wins)
+            for i in range(int(20*wins/currbest + wins/100)):
+                reproduce(generation, active)
+            currbest = max(currbest, wins)
             break
