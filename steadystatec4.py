@@ -3,194 +3,228 @@ import copy, math
 import time, random
 
 known_steadystates = [
-        [
-        list("   -   "),
-        list("   2   "),
-        list("   1   "),
-        list("   2   "),
-        list("  11 =-"),
-        list("  21 2+")
-        ],
-        [
-        list("  #    "),
-        list("  1    "),
-        list("  1  ++"),
-        list("  2  =="),
-        list("#21  --"),
-        list("212  @@")
-        ],
-        [
-        list("       "),
-        list("       "),
-        list(" #1  ++"),
-        list(" 12  =="),
-        list("#21  --"),
-        list("212  @@")
-        ],
-        [
-        list("  111+ "),
-        list("  222+ "),
-        list("  112+ "),
-        list("  221+ "),
-        list("  112+ "),
-        list("  221+2")
-        ],
-        [
-        list("  ##   "),
-        list("  12   "),
-        list("  11   "),
-        list("  21   "),
-        list("  12  2"),
-        list("  21  2")
-        ],
-        [
-        list(" @+    "),
-        list(" 11    "),
-        list(" 21    "),
-        list(" 22    "),
-        list("@21    "),
-        list("112 2  ")
-        ],
-        [
-        list(" -     "),
-        list(" 1     "),
-        list(" 21    "),
-        list(" 22    "),
-        list("121    "),
-        list("112 2  ")
-        ],
-        [
-        list("   -   "),
-        list("   =   "),
-        list("   +   "),
-        list("   2   "),
-        list("  11 =="),
-        list("  21 2=")
-        ],
-        [
-        list("- -=  -"),
-        list("- -2  #"),
-        list("-121  #"),
-        list("-112+-@"),
-        list("12221-@"),
-        list("22121--")
-        ],
-        [
-        list("   #   "),
-        list("   2  ="),
-        list(" 211  -"),
-        list(" 112+-+"),
-        list("12221--"),
-        list("22121=#")
-        ],
-        [
-        list("   -   "),
-        list("   +   "),
-        list("   =   "),
-        list("   2   "),
-        list("-=211  "),
-        list("=2112  "),
-        ],
-        [
-        list("   -   "),
-        list("   +   "),
-        list("   -   "),
-        list("   2   "),
-        list("-=21# #"),
-        list("=2112 1"),
-        ],
-        [
-        list(" #-#|@="),
-        list(" 1=2|2="),
-        list(" 2-1|2="),
-        list(" 1=2|1="),
-        list(" 2-1|2="),
-        list(" 1=2@1="),
-        ],
+    [
+    list("   -   "),
+    list("   2   "),
+    list("   1   "),
+    list("   2   "),
+    list("  11 =-"),
+    list("  21 2+")
+    ],
+    [
+    list("  #    "),
+    list("  1    "),
+    list("  1  ++"),
+    list("  2  =="),
+    list("#21  --"),
+    list("212  @@")
+    ],
+    [
+    list("       "),
+    list("       "),
+    list(" #1  ++"),
+    list(" 12  =="),
+    list("#21  --"),
+    list("212  @@")
+    ],
+    [
+    list("  111| "),
+    list("  222| "),
+    list("  112| "),
+    list("  221| "),
+    list("  112| "),
+    list("  221-2")
+    ],
+    [
+    list("  ##   "),
+    list("  12   "),
+    list("  11   "),
+    list("  21   "),
+    list("  12  2"),
+    list("  21  2")
+    ],
+    [
+    list(" @+    "),
+    list(" 11    "),
+    list(" 21    "),
+    list(" 22    "),
+    list("@21    "),
+    list("112 2  ")
+    ],
+    [
+    list(" -     "),
+    list(" 1     "),
+    list(" 21    "),
+    list(" 22    "),
+    list("121    "),
+    list("112 2  ")
+    ],
+    [
+    list("   -   "),
+    list("   +   "),
+    list("   -   "),
+    list("   2   "),
+    list("  11 =-"),
+    list("  21 2+")
+    ],
+    [
+    list("- -=  -"),
+    list("- -2  #"),
+    list("-121  #"),
+    list("-112+-@"),
+    list("12221-@"),
+    list("22121--")
+    ],
+    [
+    list("   #   "),
+    list("   2  ="),
+    list(" 211  -"),
+    list(" 112+-+"),
+    list("12221--"),
+    list("22121=#")
+    ],
+    [
+    list("   -   "),
+    list("   +   "),
+    list("   =   "),
+    list("   2   "),
+    list("-=211  "),
+    list("=2112  "),
+    ],
+    [
+    list("   -   "),
+    list("   +   "),
+    list("   -   "),
+    list("   2   "),
+    list("-=21# #"),
+    list("=2112 1"),
+    ],
+    [
+    list(" #-#|@="),
+    list(" 1=2|2="),
+    list(" 2-1|2="),
+    list(" 1=2|1="),
+    list(" 2-1|2="),
+    list(" 1=2@1="),
+    ],
+    [
+    list(" |=1   "),
+    list(" ||2   "),
+    list("+| 1-  "),
+    list("+|22|  "),
+    list("+|21-  "),
+    list("+1122  "),
+    ],
+    [
+    list("  + | |"),
+    list("  1 | |"),
+    list("  2 |2|"),
+    list("  1 |1|"),
+    list("  22 2|"),
+    list("  12=1|"),
+    ],
+    [
+    list("  +  =|"),
+    list("  1||||"),
+    list("  22 2|"),
+    list("  12-1|"),
+    list("  21 2|"),
+    list("  12-1#"),
+    ],
+    [
+    list("|  =  +"),
+    list("|  2  |"),
+    list("|  1+ ="),
+    list("|-@211="),
+    list("|=12221"),
+    list("--12122")
+    ],
+    [
+    list("  | x  "),
+    list("  | x  "),
+    list("  |2x1 "),
+    list("  |1=1 "),
+    list("  |2=22"),
+    list("  12=21"),
+    ],
+    [
+    list("  |+x  "),
+    list("  |1x  "),
+    list("  |2x  "),
+    list("  |1=1 "),
+    list("  |2 22"),
+    list("  12=21"),
+    ],
+    [
+    list(" =+1+= "),
+    list(" |122||"),
+    list("  2112="),
+    list("-|1221|"),
+    list("=22121="),
+    list("121221-"),
+    ],
+    [
+    list("- +2+2+"),
+    list("- -2+1-"),
+    list("- 21=2+"),
+    list("+-12+1|"),
+    list("- 21+2-"),
+    list("1-12=1+")
+    ],
+    [
+    list("   |@  "),
+    list("   |2  "),
+    list("  2|2  "),
+    list("  1|1  "),
+    list("  1|21@"),
+    list("  12122")
+    ],
+    [
+    list("@ 21+@|"),
+    list("2 12+2|"),
+    list("1 11+2|"),
+    list("2 12+11"),
+    list("1221222"),
+    list("2112121")
+    ],
+    [
+    list(" =+1+=|"),
+    list(" #122||"),
+    list(" 22112|"),
+    list(" 11221|"),
+    list("-12121|"),
+    list("221221+")
+    ],
+    [
+    list(" 12    "),
+    list(" 21    "),
+    list(" 12 +  "),
+    list(" 21 +  "),
+    list(" 12   -"),
+    list(" 12 @ @"),
+    ],
 ]
 
 unproven=[
-        [
-        list("  @@ | "),
-        list("  11 | "),
-        list("  12 | "),
-        list("  21 |2"),
-        list("- 12 |1"),
-        list("2 21 +2"),
-        ],
-        [
-        list("       "),
-        list("   2   "),
-        list("   1   "),
-        list("   211 "),
-        list("  12221"),
-        list("  12122")
-        ],
-        [
-        list("|| 2|2|"),
-        list("|| 2|1|"),
-        list("||21|2|"),
-        list("| 12|1|"),
-        list("| 21|2|"),
-        list("1 12 1=")
-        ],
-        [
-        list("-= 2==+"),
-        list("-=-2+1 "),
-        list("==21-2="),
-        list("-+12=1+"),
-        list("=@21=2-"),
-        list("@11221=")
-        ],
-        [
-        list("-= 2==+"),
-        list("-=-2+1 "),
-        list("==21-2="),
-        list("-+12=1+"),
-        list("=-21=2-"),
-        list("2112=1=")
-        ],
-        [
-        list(" $ 1=$="),
-        list("  221++"),
-        list(" 2112+@"),
-        list(" 1221+@"),
-        list(" 1212 ="),
-        list(" 12212 "),
-        ],
-        [
-        list("= -=-+="),
-        list("= -=   "),
-        list("-+ +=+="),
-        list("=  2$++"),
-        list("- 11$2-"),
-        list("- 12122"),
-        ],
-        [
-        list("       "),
-        list("       "),
-        list("++ @ @ "),
-        list("== 1+1 "),
-        list("-- 2 2 "),
-        list("$$21 12"),
-        ],
-        [
-        list("  |- -|"),
-        list("  |- -|"),
-        list("  |2 -|"),
-        list("  -1+1-"),
-        list("  #2+2#"),
-        list("  12-21"),
-        ],
-        [
-        list("   -   "),
-        list("   =   "),
-        list("  -1   "),
-        list("  +2   "),
-        list("-#21#  "),
-        list("=2112  "),
-        ],
+    [
+    list("       "),
+    list("       "),
+    list("   2 1 "),
+    list("   1 1 "),
+    list("   2 22"),
+    list("  12 21"),
+    ],
+    [
+    list("       "),
+    list("       "),
+    list("++ @ @ "),
+    list("== 1+1 "),
+    list("-- 2 2 "),
+    list("$$21 12"),
+    ],
 ]
+num_coevolution = 100
+last_defeats=[""]*num_coevolution
 
 boardheight = 6
 boardwidth = 7
@@ -220,7 +254,6 @@ def mark_board(steadystate, board, y, x, player):
     steadystate[y][x] = p
 
 def play(steadystate, board):
-    #column = int(input("Pick a column (1-7): ")) - 1
     x = -1
     indices = [i for i, x in enumerate(board[0]) if x == '.'] # get indices of all legal moves
     if indices: # if there is a legal move
@@ -231,7 +264,24 @@ def play(steadystate, board):
         if board[y][x] == ".":
             mark_board(steadystate, board, y, x, 1)
             return (True, (y,x))
-    return (False, ())
+    print("this shouldnt happen")
+    exit()
+
+def play_with_coevolution(steadystate, board, coevolution, moveno):
+    x = -1
+    indices = [i for i, x in enumerate(board[0]) if x == '.'] # get indices of all legal moves
+    if moveno < len(coevolution) and int(coevolution[moveno]) in indices:
+        x = int(coevolution[moveno])
+    elif indices: # if there is a legal move
+        x = random.choice(indices) # choose a random index from the list of indices
+    else:
+        return (False, ()) # There are no legal moves.
+    for y in range(boardheight-1,-1,-1):
+        if board[y][x] == ".":
+            mark_board(steadystate, board, y, x, 1)
+            return (True, (y,x))
+    print("this shouldnt happen")
+    exit()
 
 def steadystateresponse(steadystate, board):
     # First Priority: Obey Miai
@@ -322,8 +372,6 @@ def reproduce(steadystateslist, ssindex):
     whichoverwrite = random.randint(0,len(steadystateslist)-1)
     r = random.random()
     steadystateslist[whichoverwrite] = copy.deepcopy(steadystateslist[ssindex])
-    if r < 0.2:
-        whichoverwrite = random.randint(0,len(steadystateslist)-1)
     y = random.randint(0, boardheight-1)
     x = random.randint(0, boardwidth-1)
     if steadystateslist[whichoverwrite][y][x] not in ['1','2']:
@@ -331,18 +379,41 @@ def reproduce(steadystateslist, ssindex):
 
 def play_one_game(steadystate_original):
     (steadystate, board) = generate_board(steadystate_original)
+    defeat_pattern = ""
     while True:
-        #pprint(steadystate)
         (legal, coords) = play(steadystate, board)
         if not legal:
-            return -1
+            break
+        defeat_pattern += str(coords[1])
         if check_winner(board, "1", coords):
-            return -1
+            break
         (legal, coords) = steadystateresponse(steadystate, board)
         if not legal:
-            return -1
+            break
         if check_winner(board, "2", coords):
             return 1
+    last_defeats[int(random.random()*num_coevolution)] = defeat_pattern
+    return -1
+
+def play_one_game_with_coevolution(steadystate_original, coevolution):
+    (steadystate, board) = generate_board(steadystate_original)
+    defeat_pattern = ""
+    moveno = 0
+    while True:
+        (legal, coords) = play_with_coevolution(steadystate, board, coevolution, moveno)
+        moveno+=1
+        if not legal:
+            break
+        defeat_pattern += str(coords[1])
+        if check_winner(board, "1", coords):
+            break
+        (legal, coords) = steadystateresponse(steadystate, board)
+        if not legal:
+            break
+        if check_winner(board, "2", coords):
+            return 1
+    last_defeats[int(random.random()*num_coevolution)] = defeat_pattern
+    return -1
 
 
 
@@ -415,7 +486,7 @@ class TestCheckWinner(unittest.TestCase):
     def test_known_steady_states(self):
         for steadystate in known_steadystates:
             pprint(steadystate)
-            for i in range(100):
+            for i in range(200):
                 assert(play_one_game(steadystate) == 1)
 
 import sys
@@ -443,22 +514,39 @@ if len(result.failures) > 0 or len(result.errors) > 0:
 
 
 
+
+
 currbest = 1
 generation = [copy.deepcopy(unproven[0]) for _ in range(1000)]
+for i in range(len(generation)):
+    y = random.randint(0, boardheight-1)
+    x = random.randint(0, boardwidth-1)
+    if generation[i][y][x] not in ['1','2']:
+        generation[i][y][x] = random.choice(priority_list + miai + claims + [' ', ' '])
+
+
 while True:
     active = random.randint(0,len(generation)-1)
     wins = 0
+    coe = 0
     while True:
-        if play_one_game(generation[active]) >= 0:
+        play_one = 0
+        if random.random() < 0.98 or coe >= num_coevolution:
+            play_one = play_one_game(generation[active])
+        else:
+            play_one = play_one_game_with_coevolution(generation[active], last_defeats[coe])
+            coe += 1
+        if play_one >= 0:
             wins+=1
-            if wins % 1000 == 0:
+            if wins % 100 == 99:
                 print(f"SteadyState wins! {wins}")
                 pprint(generation[active])
             if wins == 100000:
                 exit()
         else:
-            print(wins)
-            for i in range(int(20*wins/currbest + wins/100)):
+            for i in range(int(wins/2)):
                 reproduce(generation, active)
-            currbest = max(currbest, wins)
+            if wins > currbest:
+                currbest = wins
+                print(wins)
             break
