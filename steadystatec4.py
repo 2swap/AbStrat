@@ -207,20 +207,20 @@ known_steadystates = [
 
 unproven=[
     [
-    list("       "),
-    list("       "),
-    list("   2 1 "),
-    list("   1 1 "),
-    list("   2 22"),
-    list("  12 21"),
+    list("   1   "),
+    list("   2   "),
+    list("   1   "),
+    list("   2   "),
+    list("  -1 @+"),
+    list("  21 2@")
     ],
     [
-    list("       "),
-    list("       "),
-    list("++ @ @ "),
-    list("== 1+1 "),
-    list("-- 2 2 "),
-    list("$$21 12"),
+    list("--21-- "),
+    list("++22++ "),
+    list("--21-- "),
+    list("  12   "),
+    list("  211  "),
+    list("  122  "),
     ],
 ]
 num_coevolution = 100
@@ -311,7 +311,6 @@ def steadystateresponse(steadystate, board):
         for y in range(boardheight-1, -1, -1):
             ss = steadystate[y][x]
             if ss != "1" and ss != "2":
-                priorities[x] = ss
                 # Claimeven
                 if ss == ' ' and y%2==0:
                     mark_board(steadystate, board, y, x, 2)
@@ -320,6 +319,7 @@ def steadystateresponse(steadystate, board):
                 if ss == '|' and y%2==1:
                     mark_board(steadystate, board, y, x, 2)
                     return (True, (y,x))
+                priorities[x] = ss
                 break
 
     # Third Priority: Follow Priority
@@ -377,17 +377,28 @@ def reproduce(steadystateslist, ssindex):
     if steadystateslist[whichoverwrite][y][x] not in ['1','2']:
         steadystateslist[whichoverwrite][y][x] = random.choice(priority_list + miai + claims + [' ', ' '])
 
+debug = False
 def play_one_game(steadystate_original):
     (steadystate, board) = generate_board(steadystate_original)
     defeat_pattern = ""
+    if debug:
+        print('\n\n\n\n\n\n\n')
     while True:
+        if debug:
+            print('\n')
         (legal, coords) = play(steadystate, board)
+        if debug:
+            pprint(board)
         if not legal:
             break
         defeat_pattern += str(coords[1])
         if check_winner(board, "1", coords):
+            if debug:
+                exit()
             break
         (legal, coords) = steadystateresponse(steadystate, board)
+        if debug:
+            pprint(board)
         if not legal:
             break
         if check_winner(board, "2", coords):
@@ -482,6 +493,42 @@ class TestCheckWinner(unittest.TestCase):
         for x in range(boardwidth):
             for y in range(boardheight):
                 self.assertTrue(check_winner(board, 1, (y,x)) == (y>=2 and y+x==6))
+        """
+        [['.', '.', '.', '1', '.', '.', '.'],
+         ['.', '.', '.', '1', '.', '.', '.'],
+         ['2', '.', '1', '2', '.', '2', '1'],
+         ['1', '.', '2', '1', '.', '1', '1'],
+         ['2', '.', '2', '2', '.', '2', '2'],
+         ['1', '.', '1', '2', '.', '2', '1']]
+        [['.', '.', '.', '1', '.', '.', '.'],
+         ['.', '.', '2', '1', '.', '.', '.'],
+         ['2', '.', '1', '2', '.', '2', '1'],
+         ['1', '.', '2', '1', '.', '1', '1'],
+         ['2', '.', '2', '2', '.', '2', '2'],
+         ['1', '.', '1', '2', '.', '2', '1']]
+
+
+        [['.', '.', '.', '1', '.', '.', '.'],
+         ['.', '.', '2', '1', '.', '.', '1'],
+         ['2', '.', '1', '2', '.', '2', '1'],
+         ['1', '.', '2', '1', '.', '1', '1'],
+         ['2', '.', '2', '2', '.', '2', '2'],
+         ['1', '.', '1', '2', '.', '2', '1']]
+        [['.', '.', '2', '1', '.', '.', '.'],
+         ['.', '.', '2', '1', '.', '.', '1'],
+         ['2', '.', '1', '2', '.', '2', '1'],
+         ['1', '.', '2', '1', '.', '1', '1'],
+         ['2', '.', '2', '2', '.', '2', '2'],
+         ['1', '.', '1', '2', '.', '2', '1']]
+
+
+        [['.', '.', '2', '1', '.', '.', '1'],
+         ['.', '.', '2', '1', '.', '.', '1'],
+         ['2', '.', '1', '2', '.', '2', '1'],
+         ['1', '.', '2', '1', '.', '1', '1'],
+         ['2', '.', '2', '2', '.', '2', '2'],
+         ['1', '.', '1', '2', '.', '2', '1']]
+        """
 
     def test_known_steady_states(self):
         for steadystate in known_steadystates:
@@ -494,7 +541,6 @@ import sys
 # Load and run the tests
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCheckWinner)
 result = unittest.TextTestRunner(verbosity=2).run(suite)
-
 # Exit with an error code if any tests failed or had an error
 if len(result.failures) > 0 or len(result.errors) > 0:
     sys.exit(1)
@@ -538,7 +584,7 @@ while True:
             coe += 1
         if play_one >= 0:
             wins+=1
-            if wins % 100 == 99:
+            if wins % 500 == 99:
                 print(f"SteadyState wins! {wins}")
                 pprint(generation[active])
             if wins == 100000:
